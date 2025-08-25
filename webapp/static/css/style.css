@@ -1,14 +1,93 @@
 /* TODO: Agregar estilos personalizados */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
 }
 
-.product-card {
-    /* TODO: Estilos para las tarjetas de productos */
+/* Estilos para las tarjetas de productos */
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
 }
 
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.fs-4 {
+    color: #0d6efd;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Estilos para la sección de productos */
+.row.row-cols-md-3 > .col {
+    padding-bottom: 1.5rem;
+}
+
+/* Estilos para los mensajes de alerta */
+.alert {
+    border-radius: 8px;
+}
+
+/* Estilos para los items del carrito (futura implementación) */
 .cart-item {
-    /* TODO: Estilos para items del carrito */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* TODO: Agregar más estilos según sea necesario */
+.cart-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+    margin-left: 15px;
+}
+
+.cart-item-details h5 {
+    margin-bottom: 5px;
+}
+
+.cart-item-quantity {
+    display: flex;
+    align-items: center;
+}
+
+.cart-item-quantity button {
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px 10px;
+}

@@ -8,6 +8,46 @@
         <h1>Bienvenido a la Tienda Virtual</h1>
         <!-- TODO: Mostrar productos destacados -->
         <!-- TODO: Agregar carousel o grid de productos -->
+         <p class="lead">Explora nuestros productos destacados. ¡Encuentra lo que necesitas hoy!</p>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Productos Destacados</h2>
+    </div>
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <!-- Se podría usar una imagen real del producto aquí -->
+                <img src="https://placehold.co/600x400/007bff/FFFFFF?text={{ product.name|urlencode }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <div class="mt-auto">
+                        <p class="fs-4 fw-bold mb-1">${{ "%.2f"|format(product.price) }}</p>
+                        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                Agregar al Carrito
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="col-12 text-center">
+        <p class="text-muted">No se encontraron productos destacados en este momento.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
     </div>
 </div>
 {% endblock %}
