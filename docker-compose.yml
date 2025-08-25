@@ -1,6 +1,7 @@
 
-services:
+version: '3.8'
 
+services:
   database:
     build: ./database
     environment:
@@ -37,7 +38,8 @@ services:
       - tienda_network
 
   proxy:
-    build: ./proxy
+    # Cambia el contexto de construcción para que apunte a la carpeta 'nginx'
+    build: ./nginx
     ports:
       - "80:80"
     depends_on:
