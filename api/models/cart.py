@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
-from api.database import Base
+from database import Base
 import uuid
 
 class Cart(Base):

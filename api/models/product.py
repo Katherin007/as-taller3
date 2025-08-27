@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from api.database import Base
+from database import Base
 import uuid
 
 class Product(Base):

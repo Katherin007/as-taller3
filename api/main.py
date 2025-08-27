@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from api.database import get_db
-from api.routes import users, products, carts
+from database import get_db
+from routes import users, products, carts
 
 # TODO: Crear la instancia de FastAPI
 app = FastAPI(title="Tienda Virtual API", version="1.0.0")

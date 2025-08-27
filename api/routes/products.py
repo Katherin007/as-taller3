@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from api.database import get_db
-from api.models.product import Product
+from database import get_db
+from models.product import Product
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -32,13 +32,13 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str] = None
 
 class ProductResponse(BaseModel):
-    id: str
+    id: str # revisar
     name: str
     description: str | None
     price: float
     stock: int
     image_url: str | None
-    created_at: str
+    created_at: str #revisar
 
     class Config:
         orm_mode = True

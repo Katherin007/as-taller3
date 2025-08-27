@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from api.database import get_db
-from api.models.cart import Cart, CartItem
-from api.models.product import Product
-from api.models.user import User
+from database import get_db
+from models.cart import Cart, CartItem
+from models.product import Product
+from models.user import User
 from pydantic import BaseModel, Field
 from typing import List
 
