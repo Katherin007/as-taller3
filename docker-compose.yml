@@ -1,6 +1,8 @@
 services:
   database:
     build: ./database
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: tienda_db
       POSTGRES_USER: tienda_user
@@ -17,6 +19,8 @@ services:
 
   api:
     build: ./api
+    ports:
+      - "5000:5000"
     environment:
       DATABASE_URL: postgresql://tienda_user:tienda_password@database:5432/tienda_db
     depends_on:
@@ -27,6 +31,8 @@ services:
 
   webapp:
     build: ./webapp
+    ports:
+      - "8000:8000"
     environment:
       API_URL: http://api:8000
     depends_on:

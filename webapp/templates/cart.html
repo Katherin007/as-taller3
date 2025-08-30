@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Carrito - Tienda Virtual{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <h1 class="mb-4">Carrito de Compras</h1>
+
+    {% if cart.items %}
+        <ul class="list-group mb-3">
+            {% for item in cart.items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center" id="cart-item-{{ item.id }}">
+                    <div class="item-info">
+                        <h5 class="mb-1">{{ item.product.name }}</h5>
+                        <small class="text-muted">Cantidad: {{ item.quantity }}</small>
+                    </div>
+                    <div>
+                        <span class="fw-bold text-success me-3">${{ "%.2f"|format(item.total_price) }}</span>
+                        <button 
+                            class="btn btn-sm btn-outline-danger" 
+                            onclick="removeFromCart({{ item.id }})"
+                            title="Eliminar del carrito">
+                            &times;
+                        </button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="text-end">
+            <p class="h5">Total: <span class="text-success">${{ "%.2f"|format(cart.total) }}</span></p>
+            <!-- Aquí podrías añadir un botón para ir al checkout -->
+            <a href="{{ url_for('main.checkout') }}" class="btn btn-primary mt-2">Proceder al pago</a>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>No hay productos en el carrito.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

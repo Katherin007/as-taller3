@@ -1,16 +1,18 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from database import get_db
 from routes import users, products, carts
 
 # TODO: Crear la instancia de FastAPI
-app = FastAPI(title="Tienda Virtual API", version="1.0.0")
+app = FastAPI(
+    title="Tienda Virtual API", 
+    version="1.0.0",
+    description="API para la gestión de una tienda virtual")
+
 
 # TODO: Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Cambiar según las necesidades de seguridad
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

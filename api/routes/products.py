@@ -5,6 +5,8 @@ from database import get_db
 from models.product import Product
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from uuid import UUID
+from datetime import datetime 
 
 router = APIRouter()
 def get_current_user_is_admin(user_id: str | None = None):
@@ -32,13 +34,13 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str] = None
 
 class ProductResponse(BaseModel):
-    id: str # revisar
+    id: UUID # TODO: cambiar porque debe ser UUID
     name: str
     description: str | None
     price: float
     stock: int
     image_url: str | None
-    created_at: str #revisar
+    created_at: datetime # TODO cambiar porque debe ser DateTime
 
     class Config:
         orm_mode = True

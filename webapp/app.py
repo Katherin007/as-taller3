@@ -1,151 +1,157 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Blueprint
 import requests
 import os
-from datetime import datetime
 
-# TODO: Configurar la aplicación Flask
+# Crear el Blueprint para las rutas principales
+main = Blueprint('main', __name__)
+
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave-por-defecto-cambiar')
 
-# TODO: Configurar la URL de la API
-API_URL = os.getenv('API_URL', 'http://api:8000')
+API_URL = os.getenv('API_URL', 'http://api:8000')  # Cambié el valor por defecto a localhost por razones de seguridad
 
-@app.route('/')
+# Rutas dentro del Blueprint 'main'
+
+@main.route('/')
 def index():
-    # TODO: Implementar página principal
     # Obtener productos destacados de la API
     try:
-        response = requests.get(f"{API_URL}/products/featured")
-        response.raise_for_status() # Lanza una excepción para errores de HTTP (4xx o 5xx)
-        products = response.json()
-        return render_template('index.html', products=products)
-    except requests.exceptions.RequestException as e:
-        flash(f"Error al conectar con la API: {e}", "danger")
-        return render_template('index.html', products=[])
+        resp = api_request('/products/featured')
+        featured_products = resp.json()
+    except Exception as e:
+        featured_products = []
+        flash(f'No se pudieron cargar los productos destacados: {str(e)}', 'warning')
+    return render_template('index.html', featured_products=featured_products)
 
-@app.route('/products')
+@main.route('/products')
 def products():
-    # TODO: Implementar página de productos
-    # Obtener lista de productos de la API
+    search_query = request.args.get('q', '')
+    params = {'q': search_query} if search_query else {}
     try:
-        response = requests.get(f"{API_URL}/products")
-        response.raise_for_status()
-        products = response.json()
-        return render_template('products.html', products=products)
-    except requests.exceptions.RequestException as e:
-        flash(f"Error al conectar con la API: {e}", "danger")
-        return render_template('products.html', products=[])
+        resp = api_request('/products', params=params)
+        products = resp.json()
+    except Exception as e:
+        products = []
+        flash(f'No se pudieron cargar los productos: {str(e)}', 'warning')
+    return render_template('products.html', products=products, search_query=search_query)
 
-@app.route('/login', methods=['GET', 'POST'])
+@main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # TODO: Implementar lógica de login
-        # Enviar datos a la API de autenticación
-        if request.method == 'POST':
-            email = request.form.get('email')
-            password = request.form.get('password')
+        data = {
+            'username': request.form['username'],
+            'password': request.form['password'],
+        }
         try:
-            response = api_request('auth/login', 'POST', {'email': email, 'password': password})
-            if response and response.status_code == 200:
-                session['user_id'] = response.json().get('user_id')
-                session['username'] = response.json().get('username')
-                flash("Has iniciado sesión correctamente.", "success")
-                return redirect(url_for('index'))
+            resp = api_request('/users/login', method='POST', json=data)
+            if resp.status_code == 200:
+                token = resp.json().get('access_token')
+                session['token'] = token
+                session['username'] = data['username']
+                flash('Login exitoso', 'success')
+                return redirect(url_for('main.index'))
             else:
-                flash("Credenciales inválidas. Por favor, inténtalo de nuevo.", "danger")
-        except requests.exceptions.RequestException:
-            flash("No se pudo conectar con el servicio de autenticación.", "danger")
+                flash('Credenciales inválidas', 'danger')
+        except Exception as e:
+            flash(f'Error al conectarse con el servidor de autenticación: {str(e)}', 'danger')
     return render_template('login.html')
-      
 
-@app.route('/register', methods=['GET', 'POST'])
+@main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # TODO: Implementar lógica de registro
-        # Enviar datos a la API de registro
-        email = request.form.get('email')
-        password = request.form.get('password')
+        data = {
+            'username': request.form['username'],
+            'email': request.form['email'],
+            'password': request.form['password'],
+        }
         try:
-            response = api_request('auth/register', 'POST', {'email': email, 'password': password})
-            if response and response.status_code == 201:
-                flash("Registro exitoso. ¡Ahora puedes iniciar sesión!", "success")
-                return redirect(url_for('login'))
+            resp = api_request('/users/register', method='POST', json=data)
+            if resp.status_code == 201:
+                flash('Usuario registrado con éxito, por favor inicia sesión.', 'success')
+                return redirect(url_for('main.login'))
             else:
-                flash("Error al registrarse. El usuario ya podría existir.", "danger")
-        except requests.exceptions.RequestException:
-            flash("No se pudo conectar con el servicio de registro.", "danger")
+                flash('Error al registrar usuario.', 'danger')
+        except Exception as e:
+            flash(f'Error al conectarse con el servidor de registro: {str(e)}', 'danger')
     return render_template('register.html')
 
-@app.route('/cart')
+@main.route('/cart')
 def cart():
-    # TODO: Implementar página del carrito
-    # Obtener carrito del usuario de la API
     if not is_logged_in():
-        flash("Por favor, inicia sesión para ver tu carrito.", "info")
-        return redirect(url_for('login'))
-    
-    user_id = session.get('user_id')
+        flash('Debes iniciar sesión para ver el carrito', 'warning')
+        return redirect(url_for('main.login'))
+    headers = {'Authorization': f'Bearer {session["token"]}'}
     try:
-        response = api_request(f'cart/{user_id}')
-        if response and response.status_code == 200:
-            cart_items = response.json()
-            return render_template('cart.html', cart_items=cart_items)
-        else:
-            flash("Error al cargar el carrito. Puede que esté vacío.", "info")
-            return render_template('cart.html', cart_items=[])
-    except requests.exceptions.RequestException:
-        flash("No se pudo conectar con el servicio del carrito.", "danger")
-        return render_template('cart.html', cart_items=[])
+        resp = api_request('/carts', headers=headers)
+        cart = resp.json()
+    except Exception as e:
+        cart = {}
+        flash(f'No se pudo cargar el carrito: {str(e)}', 'warning')
+    return render_template('cart.html', cart=cart)
 
-@app.route('/add-to-cart/<int:product_id>', methods=['POST'])
+@main.route('/add-to-cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
-    # TODO: Implementar agregar producto al carrito
-    # Enviar request a la API
     if not is_logged_in():
-        flash("Debes iniciar sesión para agregar productos al carrito.", "info")
-        return redirect(url_for('login'))
-
-    user_id = session.get('user_id')
+        flash('Debes iniciar sesión para agregar productos al carrito', 'warning')
+        return redirect(url_for('main.login'))
+    headers = {'Authorization': f'Bearer {session["token"]}'}
+    data = {'product_id': product_id, 'quantity': int(request.form.get('quantity', 1))}
     try:
-        response = api_request(f'cart/{user_id}/add', 'POST', {'product_id': product_id})
-        if response and response.status_code == 200:
-            flash("Producto agregado al carrito exitosamente.", "success")
+        resp = api_request('/carts/items', method='POST', json=data, headers=headers)
+        if resp.status_code == 201:
+            flash('Producto agregado al carrito', 'success')
         else:
-            flash("No se pudo agregar el producto al carrito.", "danger")
-    except requests.exceptions.RequestException:
-        flash("Error al conectar con el servicio del carrito.", "danger")
-    
-    return redirect(url_for('products'))
+            flash('Error al agregar producto al carrito', 'danger')
+    except Exception as e:
+        flash(f'Error al conectar con el servidor: {str(e)}', 'danger')
+    return redirect(request.referrer or url_for('main.products'))
 
-@app.route('/logout')
+@main.route('/logout')
 def logout():
-    # TODO: Implementar logout
-    # Limpiar sesión
-    session.pop('user_id', None)
-    session.pop('username', None)
-    flash("Has cerrado sesión correctamente.", "success")
-    return redirect(url_for('index'))
+    session.clear()
+    flash('Has cerrado sesión', 'info')
+    return redirect(url_for('main.index'))
 
-# TODO: Función helper para hacer requests a la API
-def api_request(endpoint, method='GET', data=None):
-    # TODO: Implementar función para hacer requests a la API
-    full_url = f"{API_URL}/{endpoint}"
+@main.route('/profile')
+def profile():
+    if not is_logged_in():
+        flash("Inicia sesión para acceder al perfil.", "warning")
+        return redirect(url_for('main.login'))
+    return render_template('profile.html')
+
+
+# Función de solicitud a la API
+def api_request(endpoint, method='GET', params=None, json=None, headers=None):
+    url = API_URL + endpoint
+    headers = headers or {}
     try:
-        if method == 'POST':
-            response = requests.post(full_url, json=data)
-        elif method == 'GET':
-            response = requests.get(full_url)
-        # Puedes añadir otros métodos HTTP aquí si los necesitas
+        if method.upper() == 'GET':
+            response = requests.get(url, params=params, headers=headers, timeout=5)
+        elif method.upper() == 'POST':
+            response = requests.post(url, json=json, headers=headers, timeout=5)
+        elif method.upper() == 'PUT':
+            response = requests.put(url, json=json, headers=headers, timeout=5)
+        elif method.upper() == 'DELETE':
+            response = requests.delete(url, headers=headers, timeout=5)
+        else:
+            raise ValueError("Método HTTP no soportado")
         response.raise_for_status()
         return response
-    except requests.exceptions.RequestException as e:
-        print(f"Error en la petición a la API: {e}")
-        return None
+    except requests.RequestException as e:
+        raise RuntimeError(f"Error en la petición API: {str(e)}")
 
-# TODO: Función para verificar si el usuario está logueado
+# Función para verificar si el usuario está autenticado
 def is_logged_in():
-    # TODO: Verificar si hay sesión activa
-    return 'user_id' in session
+    return 'token' in session
+
+
+# Registrar el Blueprint con un prefijo de URL
+app.register_blueprint(main, url_prefix='/')
+
+@app.context_processor
+def inject_is_logged_in():
+    return dict(is_logged_in=is_logged_in)
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
